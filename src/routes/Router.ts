@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { z } from "zod";
 import {processRequestBody} from "zod-express-middleware";
 import {Memory} from "../database/entities/Memory";
-const userRoute = Router();
-const format = z.object({
+import {Like} from "typeorm";
+const route = Router();
+const writeFormat = z.object({
     topic: z.string(),
     keywords: z.array(z.string()),
     description: z.string(),
@@ -14,9 +15,31 @@ const format = z.object({
         return n.toString().split('.')[1].length <= 2
 
     }, {message: 'Max precision is 2 decimal places'} ),
-})
+});
 
-userRoute.post('/request', processRequestBody(format), async (req, res) => {
+const readFormat = z.object({
+    keywords: z.array(z.string()),
+});
+
+// Route to handle read requests
+route.get('/request', processRequestBody(readFormat), async (req, res) => {
+    let memory: Memory[] = [];
+
+    for (let i = 0; i < req.body.keywords.length; i++)
+    {
+        let match: Memory[] = await Memory.find({
+            where: {
+                keywords: Like(`%${req.body.keywords[i]}%`)
+            }
+        })
+        memory = memory.concat(match);
+    }
+
+    res.status(200).json(memory);
+});
+
+// Route to handle store requests
+route.post('/request', processRequestBody(writeFormat), async (req, res) => {
     const memory = new Memory();
     memory.topic = req.body.topic;
     memory.keywords = JSON.stringify(req.body.keywords);
@@ -30,4 +53,4 @@ userRoute.post('/request', processRequestBody(format), async (req, res) => {
     res.status(200).json(memory);
 });
 
-export default userRoute;
+export default route;
