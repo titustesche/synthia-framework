@@ -11,7 +11,7 @@ const writeFormat = z.object({
     context: z.string(),
     createdAt: z.string().datetime(),
     // Workaround for floating point values that I selfishly copied from the internet
-    importance: z.number().refine( n => {
+    importance: z.number().min(0.1).max(0.9).refine( n => {
         return n.toString().split('.')[1].length <= 2
 
     }, {message: 'Max precision is 2 decimal places'} ),
@@ -27,12 +27,18 @@ route.get('/request', processRequestBody(readFormat), async (req, res) => {
 
     for (let i = 0; i < req.body.keywords.length; i++)
     {
-        let match: Memory[] = await Memory.find({
+        let matches: Memory[] = await Memory.find({
             where: {
                 keywords: Like(`%${req.body.keywords[i]}%`)
             }
-        })
-        memory = memory.concat(match);
+        });
+
+        for (let j = 0; j < matches.length; j++) {
+            if (!memory.find(e => e.id === matches[j].id))
+            {
+                memory.push(matches[j]);
+            }
+        }
     }
 
     res.status(200).json(memory);
