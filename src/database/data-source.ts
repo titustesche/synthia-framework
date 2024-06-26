@@ -1,11 +1,13 @@
 import {DataSource} from 'typeorm';
+import {Memory} from "./entities/Memory";
 
-const appDataSource = new DataSource({
+export const AppDataSource = new DataSource({
     type: 'mariadb',
     host: 'localhost',
     port: 3306,
-    username: 'ai-memory',
+    username: 'ai_memory',
     password: '1234',
-    database: 'ai-memory',
-    entities: [],
+    database: 'ai_memory',
+    entities: [Memory],
+    synchronize: true
 });
