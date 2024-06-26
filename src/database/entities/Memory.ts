@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, serialize } from "typeorm";
+import { serializeJs } from "serialize-js";
 
 @Entity()
 export class Memory extends BaseEntity{
@@ -8,8 +9,12 @@ export class Memory extends BaseEntity{
     @Column()
     topic: string
 
-    @Column()
-    keywords: string[]
+    @Column({type: 'text'})
+    keywords: string
+
+    getKeywords(): string[] {
+        return JSON.parse(serializeJs(this.keywords));
+    }
 
     @Column()
     description: string
@@ -20,6 +25,6 @@ export class Memory extends BaseEntity{
     @Column()
     createdAt: Date
 
-    @Column()
+    @Column('float', { precision: 1, scale: 1 })
     importance: number
 }
