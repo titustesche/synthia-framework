@@ -1,10 +1,10 @@
-import userRoute from "./routes/outgoing";
+import route from "./routes/Router";
 import {AppDataSource} from "./database/data-source";
 const Express = require("express");
 
 const app = Express();
 app.use(Express.json());
-app.use(userRoute)
+app.use(route)
 
 
 const port = 3000;
