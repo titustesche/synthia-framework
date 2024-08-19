@@ -13,6 +13,7 @@
                     <!-- Hier werden die Chats angezeigt -->
                 </div>
                 <div id="ui_wrapper">
+                    <input type="file" onchange="encodeImageFile(this)">
                     <input type="text" name="query" id="query" placeholder="Your message..." required/>
                     <button class="button_primary" onclick="sendRequest()">Send</button>
                 </div>
