@@ -1,10 +1,14 @@
-import route from "./routes/Router";
+import databaseRoute from "./routes/database";
 import {AppDataSource} from "./database/data-source";
+import actionRoute from "./routes/actions";
+const cors = require("cors");
 const Express = require("express");
 
 const app = Express();
 app.use(Express.json());
-app.use(route)
+app.use(cors());
+app.use(databaseRoute);
+app.use(actionRoute);
 
 
 const port = 3000;
