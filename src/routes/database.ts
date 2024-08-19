@@ -3,7 +3,7 @@ import { z } from "zod";
 import {processRequestBody} from "zod-express-middleware";
 import {Memory} from "../database/entities/Memory";
 import {Like} from "typeorm";
-const route = Router();
+const databaseRoute = Router();
 const writeFormat = z.object({
     topic: z.string(),
     keywords: z.array(z.string()),
@@ -22,7 +22,7 @@ const readFormat = z.object({
 });
 
 // Route to handle read requests
-route.get('/request', processRequestBody(readFormat), async (req, res) => {
+databaseRoute.get('/request', processRequestBody(readFormat), async (req, res) => {
     let memory: Memory[] = [];
 
     for (let i = 0; i < req.body.keywords.length; i++)
@@ -33,6 +33,11 @@ route.get('/request', processRequestBody(readFormat), async (req, res) => {
             }
         });
 
+        // Check if the object already exists within the array,
+        // This might happen when the query and the found object share more than one keyword in common.
+        // Todo:
+        //  Implement some sort of matching value
+        //  to let the AI know that the found dataset might be more relevant in this context
         for (let j = 0; j < matches.length; j++) {
             if (!memory.find(e => e.id === matches[j].id))
             {
@@ -45,7 +50,7 @@ route.get('/request', processRequestBody(readFormat), async (req, res) => {
 });
 
 // Route to handle store requests
-route.post('/request', processRequestBody(writeFormat), async (req, res) => {
+databaseRoute.post('/request', processRequestBody(writeFormat), async (req, res) => {
     const memory = new Memory();
     memory.topic = req.body.topic;
     memory.keywords = JSON.stringify(req.body.keywords);
@@ -59,4 +64,4 @@ route.post('/request', processRequestBody(writeFormat), async (req, res) => {
     res.status(200).json(memory);
 });
 
-export default route;
+export default databaseRoute;
