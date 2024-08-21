@@ -3,7 +3,7 @@ import {z} from "zod";
 import {processRequestBody} from "zod-express-middleware";
 import * as path from "node:path";
 const fs = require('fs');
-const spawn = require('child_process').spawn;
+const { spawn } = require('child_process');
 
 const actionRoute = Router();
 
@@ -12,6 +12,8 @@ const receiveSchema = z.object({
 })
 
 actionRoute.post('/action', processRequestBody(receiveSchema), async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Transfer-Encoding', 'chunked');
     let filepath = path.resolve('tmp/script.py');
     let script = "import os\nimport webbrowser\nimport time\nimport random\nimport tkinter as tk\n" + req.body.query;
     fs.writeFile(filepath, script, (err: any) => {
@@ -22,18 +24,26 @@ actionRoute.post('/action', processRequestBody(receiveSchema), async (req, res) 
 
         else
         {
-            const pythonProcess = spawn('python', [filepath], { stdio: 'inherit' });
-            pythonProcess.on('error', (e: { message: any; }) => {
-                return res.status(500).json({"error": e.message});
+            const pythonProcess = spawn('python', ['-u', filepath]);
+
+            pythonProcess.stdout.on('data', async (data: any) => {
+                let chunk = data.toString('utf-8');
+                res.write(JSON.stringify({"data": chunk}));
+                res.flushHeaders();
+                // res.status(200).json(data);
+            });
+
+            pythonProcess.stderr.on('data', (err: any) => {
+                res.write(JSON.stringify({"error": err}));
+                res.flushHeaders();
+            });
+
+            pythonProcess.on('close', (code: any) => {
+                res.write(JSON.stringify({"code": code}));
+                return res.end();
             })
-            pythonProcess.on('data', (data: any) => {
-                res.status(200).json(data);
-            });
-            pythonProcess.on('close', (e: any) => {
-                return res.status(200).json(e);
-            });
         }
-    })
-})
+    });
+});
 
 export default actionRoute;
