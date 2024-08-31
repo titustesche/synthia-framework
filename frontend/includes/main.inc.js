@@ -3,9 +3,12 @@ let reader = new FileReader();
 let actionBuffer = "";
 let activityRead = 0;
 let chatbox;
+let query;
+let glassWrapper;
 
 window.onload = function() {
     chatbox = document.getElementById('chatbox');
+    glassWrapper = document.getElementById('glassWrapper');
     messages = [{
         "role": "system",
         "content":
@@ -43,6 +46,34 @@ window.onload = function() {
         }
     }
     
+    query = document.getElementById('query');
+    query.addEventListener('keydown', function(e) {
+        if (e.code === 'Enter' && !e.shiftKey)
+        {
+            e.preventDefault();
+            sendRequest();
+            this.style.height = 'auto';
+            this.style.height = `min(${this.scrollHeight/2}px, 100px)`;
+        }
+    });
+    
+    query.addEventListener('input', function(e) {
+        this.style.height = 'auto';
+        this.style.height = `min(${this.scrollHeight}px, 100px)`;
+    });
+    
+    document.getElementsByTagName('body')[0].addEventListener('mousemove', function(e) {
+        let elementWidth = glassWrapper.offsetWidth;
+        let elementHeight = glassWrapper.offsetHeight;
+        let posX = glassWrapper.offsetLeft;
+        let posY = glassWrapper.offsetTop;
+        
+        let mouseX = (e.pageX - posX) / elementWidth * 100;
+        let mouseY = (e.pageY - posY) / elementHeight * 100;
+        
+        glassWrapper.style.backgroundImage = `radial-gradient(circle farthest-corner at ${mouseX}% ${mouseY}%, #CCCCCC22 5px, #00000000 50px)`;
+    });
+    
 }
 
 function encodeImageFile(element)
@@ -56,20 +87,20 @@ function encodeImageFile(element)
 }
 
 function sendRequest() {
-    const prompt = document.getElementById("query").value;
+    const textarea = document.getElementById("query");
     let ai_message = "";
     // messages = document.cookie !== "" ? decodeURIComponent(document.cookie).split(';') : {};
     console.log(messages);
     try
     {
-        messages.push({"role": "user", "content": prompt, "images": [reader.result.split(',')[1]]});
+        messages.push({"role": "user", "content": textarea.value, "images": [reader.result.split(',')[1]]});
     }
     catch
     {
-        messages.push({"role": "user", "content": prompt});
+        messages.push({"role": "user", "content": textarea.value});
     }
     
-    chatbox.innerHTML += "<p class='message' id='user'>" + prompt + "</p>" + "<p class='message' id='ai'>";
+    chatbox.innerHTML += "<p class='message' id='user'>" + textarea.value + "</p>" + "<p class='message' id='ai'>";
     chatbox.scrollTop = chatbox.scrollHeight;
     let url = "http://localhost:11434/api/chat";
     const data = {
@@ -77,7 +108,9 @@ function sendRequest() {
         "messages": messages,
     };
 
-    console.log(data);
+    // Ab hier wird textarea nicht mehr verwendet
+    textarea.value = "";
+    console.log(textarea.value);
 
     const requestOptions = {
         method: "POST",
@@ -148,6 +181,7 @@ function sendRequest() {
                                     
                                     else {
                                         actionBuffer += word;
+                                        chatbox.innerHTML += "</> Working..."
                                     }
                                     break;
                             }
@@ -167,7 +201,7 @@ function sendRequest() {
         )
         .then(async (result) => {
             messages.push({"role": "assistant", "content": ai_message});
-            document.cookie = `{ "messages": ${JSON.stringify(messages)} }`;
+            // document.cookie = `{ "messages": ${JSON.stringify(messages)} }`;
             if (actionBuffer.length > 0) {
                 await sendAction(actionBuffer);
                 actionBuffer = "";
@@ -210,17 +244,17 @@ async function sendAction(code)
                                 return;
                             }
                             await controller.enqueue(value);
-                            let json = JSON.parse(new TextDecoder().decode(value));
-                            console.log(json.code);
-                            if (json.data !== undefined)
-                            {
-                                chatbox.innerHTML += `<p>${json.data}</p>`;
-                                chatbox.scrollTop = chatbox.scrollHeight;
+                            try {
+                                console.log("Decoded Value:" + new TextDecoder().decode(value));
+                                let json = JSON.parse(new TextDecoder().decode(value));
+                                if (json.data !== undefined) {
+                                    chatbox.innerHTML += `<p>${json.data}</p>`;
+                                    chatbox.scrollTop = chatbox.scrollHeight;
+                                }
                             }
-                            
-                            if (json.code !== undefined) {
-                                chatbox.innerHTML += `<p>Exit code: ${json.code} </p></div>`;
-                                chatbox.scrollTop = chatbox.scrollHeight;
+                            catch (err) {
+                                console.error(err);
+                                console.log(new TextDecoder().decode(value))
                             }
                             /*
                             let json = JSON.parse(new TextDecoder().decode(value));
@@ -259,6 +293,8 @@ async function sendAction(code)
                 }
                 if ('code' in obj) {
                     result.code = obj.code;
+                    chatbox.innerHTML += `<p>Exit code: ${result.code} </p></div>`;
+                    chatbox.scrollTop = chatbox.scrollHeight;
                 }
             });
             
