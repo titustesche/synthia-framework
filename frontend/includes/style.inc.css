@@ -3,32 +3,63 @@ html {
     font-size: 110%;
 }
 
+body {
+    margin: 0;
+    height: 100vh;
+    background-image: url('/img/bg.webp');
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 80%;
+}
+
 #chatbox {
     width: 100%;
-    background-color: #2b2b2b;
-    color: #d8d8d8;
+    height: auto;
+    flex-grow: 1;
+}
+
+#glassWrapper {
+    width: 100%;
+    height: 90vh;
+    margin: auto;
+    background-color: rgba(204, 204, 204, 0.13);
+    backdrop-filter: blur(10px);
+    color: #a4dad1;
     padding: 20px;
     border-radius: 10px;
+    border: 1px solid white;
     text-align: justify;
     word-spacing: 5px;
     line-height: 150%;
     overflow-y: scroll;
-    height: 720px;
-}
-
-.wrapper {
-    width: 70%;
-    margin: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #ui_wrapper {
     padding: 10px 20px 10px 20px;
     display: flex;
-    width: 100%;
     justify-content: space-between;
     background-color: #474747;
     color: white;
     border-radius: 15px;
+    position: relative;
+    bottom: 0;
+    left: 0;
 }
 
-
+#query {
+    width: 100%;
+    font-family: sans-serif;
+    resize: none;
+    overflow: visible;
+    background-color: transparent;
+    border: none;
+    color: white;
+    outline: none;
+}
