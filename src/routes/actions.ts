@@ -33,8 +33,8 @@ actionRoute.post('/action', processRequestBody(receiveSchema), async (req, res) 
                 // res.status(200).json(data);
             });
 
-            pythonProcess.stderr.on('data', (err: any) => {
-                res.write(JSON.stringify({"error": err}));
+            pythonProcess.stderr.on('data', async (err: any) => {
+                res.write(JSON.stringify({"error": new TextDecoder().decode(err)}));
                 res.flushHeaders();
             });
 
