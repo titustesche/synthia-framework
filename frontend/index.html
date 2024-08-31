@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <link href="includes/style.inc.css" rel="stylesheet">
@@ -8,13 +8,14 @@
 </head>
     <body>
         <div class="container">
-            <div class="wrapper">
+            <div class="wrapper" id="glassWrapper">
                 <div class="text-container" id="chatbox">
                     <!-- Hier werden die Chats angezeigt -->
                 </div>
                 <div id="ui_wrapper">
-                    <input type="file" onchange="encodeImageFile(this)">
-                    <input type="text" name="query" id="query" placeholder="Your message..." required/>
+                    <!-- <input type="file" onchange="encodeImageFile(this)"> -->
+                    <label for="query"></label>
+                    <textarea id="query" rows="1" placeholder="Your message..."></textarea>
                     <button class="button_primary" onclick="sendRequest()">Send</button>
                 </div>
             </div>
