@@ -2,6 +2,7 @@ import {Router} from "express";
 import {z} from "zod";
 import {processRequestBody} from "zod-express-middleware";
 import * as path from "node:path";
+// Same as in the index.ts, keep these as require
 const fs = require('fs');
 const { spawn } = require('child_process');
 
@@ -26,6 +27,9 @@ actionRoute.post('/action', processRequestBody(receiveSchema), async (req, res) 
         {
             const pythonProcess = spawn('python', ['-u', filepath]);
 
+            // Todo: Make sure to not send two chunks of data at the same time
+            //      Sometimes when there is only one output and the script closes immediately after,
+            //      the output and exit code will be sent together, resulting in an invalid JSON string
             pythonProcess.stdout.on('data', async (data: any) => {
                 let chunk = data.toString('utf-8');
                 res.write(JSON.stringify({"data": chunk}));
