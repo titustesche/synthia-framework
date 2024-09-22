@@ -17,9 +17,6 @@ async function sendRequest() {
     const textarea = document.getElementById("query");
     aiMessage = "";
     
-    cssRoot.style.setProperty("--outline-color", '#00d0ff');
-    console.log(messageObjects);
-    
     // Add the message to the "messageObjects" object
     try
     {
@@ -32,11 +29,12 @@ async function sendRequest() {
     
     // Retrieve that messageObjects container element
     messageElements.push(new Message("user"));
-    console.log(messageElements);
     messageElements[messageElements.length - 1].pushText(textarea.value);
     await saveMessage("user", textarea.value, activeConversation.id);
     activeMessage = new Message("assistant");
     messageElements.push(activeMessage);
+    activeMessage.outline = true;
+    activeMessage.outlineShape = 'transparent, #00d0ff';
     
     // Build request
     let url = "http://localhost:11434/api/chat";
@@ -68,7 +66,6 @@ async function sendRequest() {
                         reader.read().then(async ({done, value}) => {
                             // Close connection if done is set to true
                             if (done) {
-                                console.log("done", done);
                                 controller.close();
                                 return;
                             }
@@ -77,7 +74,6 @@ async function sendRequest() {
                             let json = JSON.parse(new TextDecoder().decode(value));
                             //console.log(json);
                             let word = json.message.content;
-                            console.log(word);
                             // Todo: Rework this to support more complex syntax
                             //      also implementing an ongoing stream across many messageObjects to expand upon scripts -- oh boi, i don't think this will happen anytime soon
                             //      Maybe another format?
@@ -122,7 +118,7 @@ async function sendRequest() {
                                         activeMessage.pushText(word);
                                         // Add the current word to the AI's response
                                         aiMessage += word;
-                                        chatbox.scrollTop = chatbox.scrollHeight;
+                                        updateScroll();
                                     }
 
                                     // If there is now a script being sent
@@ -146,11 +142,11 @@ async function sendRequest() {
             new Response(stream, { headers: { "Content-Type": "text/html" } }).text()
         )
         .then(async (result) => {
-            // Update the messageObjects and cookie
-            console.log(aiMessage);
-            cssRoot.style.setProperty("--outline-color", 'transparent');
+            // Update the messageObjects
+            activeMessage.outline = false;
             messageObjects.push({"role": "assistant", "content": aiMessage});
-            saveMessage("assistant", aiMessage, activeConversation.id);
+            await saveMessage("assistant", aiMessage, activeConversation.id);
+            
             // if the action buffer still contains a script (should never happen)
             if (actionBuffer.length > 0) {
                 // send that script and clear the action buffer
@@ -165,12 +161,10 @@ async function sendAction(code) {
     activeMessage.setCode("Running");
     // Clear up the requested code if it contains unwanted letters
     while (code.charAt(code.length -1 ) === "}" || code.charAt(code.length -1 ) === "\n" || code.charAt(code.length -1 ) === " ") {
-        console.log(`Found ${code.charAt(code.length -1)} at the end of the code, removing it.`)
         code = code.substring(0, code.length - 1);
     }
 
     while (code.charAt(0) === "{" || code.charAt(0) === "\n" || code.charAt(0) === " ") {
-        console.log(`Found ${code.charAt(0)} at the beginning of the code, removing it.`)
         code = code.substring(1);
     }
     
@@ -200,20 +194,17 @@ async function sendAction(code) {
                             await controller.enqueue(value);
                             try {
                                 // Decode the response stream
-                                console.log("Decoded Value:" + new TextDecoder().decode(value));
                                 let json = JSON.parse(new TextDecoder().decode(value));
                                 
                                 // If the response contains data
                                 if (json.data !== undefined) {
                                     // Update the active message and scroll down
                                     activeMessage.pushResult(json.data);
-                                    console.log(json.data);
-                                    chatbox.scrollTop = chatbox.scrollHeight;
+                                    updateScroll();
                                 }
                             }
                             catch (err) {
                                 console.error(err);
-                                console.log(new TextDecoder().decode(value))
                             }
                             push();
                         });
@@ -239,8 +230,6 @@ async function sendAction(code) {
                     console.error(e);
                 }
             });
-            
-            console.log(answerArray);
 
             let result = { data: [] };
 
@@ -256,7 +245,7 @@ async function sendAction(code) {
                 
                 if ('code' in obj) {
                     result.code = obj.code;
-                    chatbox.scrollTop = chatbox.scrollHeight;
+                    updateScroll();
                     activeMessage.setCode(result.code);
                 }
             });
@@ -271,7 +260,6 @@ async function sendAction(code) {
             
             if (result.error)
             {
-                console.log("Reported error");
                 activeMessage.pushError(result.error);
             }
             
@@ -316,10 +304,7 @@ async function saveMessage(role, message, conversationId) {
     }
     
     await fetch(url, requestOptions)
-        .then(res => res.json())
-        .then(result => {
-            console.log(result);
-        });
+        .then(res => res.json());
 }
 
 async function getMessages(id) {
