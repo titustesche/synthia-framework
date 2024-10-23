@@ -18,17 +18,71 @@ class Conversation {
 }
 
 class Message {
+    // Content of the message for in program usage
+    content;
+    // The role as a string
+    role;
+    // The message's HTML element
     object;
+    // The message's header child elements
+    header;
+    body;
     pyout;
     pyoutResult;
     pyoutCode;
     pyoutHeader;
     
     constructor (role) {
+        this.role = role;
         this.object = chatbox.appendChild(document.createElement("div"));
         this.object.className = `msg_${role}`;
+        this.header = this.object.appendChild(document.createElement("div"));
+        this.header.setAttribute("class", "message-header");
+        // Associate roles with their names and Print in Header
+        this.createHeader();
+        this.body = this.object.appendChild(document.createElement("div"));
+        this.body.setAttribute("class", "message-body");
 
-        chatbox.scrollTop = chatbox.scrollHeight;
+        this._outline = false;
+        this._outlineShape = "#ffffffff";
+        this.object.setAttribute("outline", this._outline);
+        cssRoot.style.setProperty("--outline-shape", this._outlineShape);
+
+        if (this.role === "user") { updateScroll(true); }
+        else { updateScroll(); }
+    }
+
+    // The message outline's attributes
+    // Todo: Implement these somehow?
+    //  I don't really know why they are still around to be honest,
+    //  but i like this approach so i'm gonna implement it
+    get outline() { return this._outline; }
+    get outlineShape() { return this._outlineShape; }
+    set outline(outline) { this._outline = outline; this.toggleOutline(); }
+    set outlineShape(outlineShape) { this._outlineShape = outlineShape; cssRoot.style.setProperty("--outline-shape", this._outlineShape); }
+    
+    toggleOutline() {
+        switch (this._outline) {
+            case true:
+                this.object.setAttribute("outline", "true");
+                break;
+                
+            case false:
+                this.object.setAttribute("outline", "false");
+                break;
+        }
+    }
+    
+    createHeader() {
+        if (this.role === "user") {
+            this.header.innerText = userName;
+            this.header.style.color = "#25d80a";
+        }
+        
+        else {
+            this.header.innerText = assistantName;
+            this.header.style.color = "#0a5fd8";
+        }
     }
     
     createPyout() {
@@ -47,7 +101,7 @@ class Message {
         this.pyoutCode = this.pyout.appendChild(document.createElement("div"));
         this.pyoutCode.className = `pyout_code`;
         
-        chatbox.scrollTop = chatbox.scrollHeight;
+        updateScroll();
     }
     
     pushResult(result) {
@@ -58,7 +112,7 @@ class Message {
     pushError(error) {
         this.pyoutResult.innerHTML += `<span style="color: #ff6f6f">${error}</span>`;
         this.pyout.scrollTop = this.pyout.scrollHeight;
-        chatbox.scrollTop = chatbox.scrollHeight;
+        updateScroll();
     }
     
     setCode(code) {
@@ -66,34 +120,31 @@ class Message {
         switch (code) {
             case 1:
                 this.pyoutCode.style.backgroundColor = '#af0000';
-                cssRoot.style.setProperty("--outline-color", '#ff0000');
+                this.outlineShape = '#ff0000';
                 this.pyoutResult.setAttribute("textCursor", "false");
                 break;
             
             case 0:
                 this.pyoutCode.style.backgroundColor = '#005900';
-                cssRoot.style.setProperty("--outline-color", '#00ff00');
+                this.outlineShape = '#00ff00';
                 this.pyoutResult.setAttribute("textCursor", "false");
                 break;
                 
             case "Running":
                 this.pyoutCode.style.backgroundColor = '#a15b00';
-                cssRoot.style.setProperty("--outline-color", '#d89716');
+                this.outlineShape = '#d89716';
                 break;
                 
             case "Writing":
                 this.pyoutCode.style.backgroundColor = '#001ba3';
-                cssRoot.style.setProperty("--outline-color", '#0033ff');
+                this.outlineShape = '#0033ff';
                 break;
         }
     }
     
     pushText(text) {
-        this.object.innerHTML += text;
-    }
-    
-    setOutlineColor(color) {
-        cssRoot.style.setProperty("--outline-color", color);
+        this.body.innerHTML += text;
+        this.content += text;
     }
 }
 
@@ -101,11 +152,13 @@ async function updateMessages() {
     messageObjects = await getMessages(activeConversation.id);
     messageElements = [];
     chatbox.innerHTML = "";
-    await renderMessages(messageObjects);
+    await renderMessages(messageObjects)
+        .then(() => {
+            return true;
+        });
 }
 
 async function renderMessages() {
-    console.log(`Called for messages rendering, messages length: ${messageObjects.length}`);
     for(let i = 0; i < messageObjects.length; i++) {
         if (i !== 0) {
             if (messageObjects[i].role !== "system") {
@@ -113,7 +166,6 @@ async function renderMessages() {
                 activeMessage.pushText(messageObjects[i].content);
             }
             else {
-                console.log(messageObjects[i]);
                 let output = JSON.parse(messageObjects[i].content);
                 activeMessage.createPyout();
                 if (output.data !== undefined) {
@@ -124,8 +176,56 @@ async function renderMessages() {
                 }
                 activeMessage.setCode(output.code);
             }
-            chatbox.scrollTop = chatbox.scrollHeight;
-            activeMessage.setOutlineColor('transparent');
+            updateScroll();
+            activeMessage.outlineShape = '#ffffff00';
+            messageElements.push(activeMessage);
         }
+    }
+}
+
+async function messageOpacity(container, messages) {
+    let containerHeight = container.clientHeight;
+    let containerTop = container.scrollTop;
+
+    messages.forEach(message => {
+        let messageTop = message.offsetTop - containerTop;
+        let messageHeight = message.clientHeight;
+
+        let opacity = 1;
+
+        if (messageTop + messageHeight < 0 || messageTop > containerHeight) {
+            opacity = 0;
+        }
+
+        else if (messageTop < 50)
+        {
+            opacity = messageTop / 50;
+        }
+
+        else if (messageTop + messageHeight > containerHeight - 50)
+        {
+            opacity = (containerHeight - (messageTop + messageHeight) / 50);
+        }
+
+        this.style.opacity = `${opacity}`;
+    })
+}
+
+function updateScroll(force = false, behaviour = 'smooth')
+{
+    if (!force) {
+        if (chatbox.scrollHeight <= (chatbox.scrollTop + chatbox.offsetHeight*2)) {
+            chatbox.scrollTo({
+                top: chatbox.scrollHeight,
+                behavior: behaviour
+            });
+        }
+    }
+    else
+    {
+        chatbox.scrollTo({
+            top: chatbox.scrollHeight,
+            behavior: behaviour
+        });
     }
 }
