@@ -1,8 +1,9 @@
+// Important for dissecting the message while it's still being streamed
 let actionBuffer = "";
 let activityRead = 0;
 let aiMessage;
 
-// Encode an image that would be provided by an HTML element, not really implemented yet
+// Encode an image that would be provided by an HTML element, not implemented yet
 function encodeImageFile(element) {
     let file = element.files[0];
     // reader = new FileReader();
@@ -13,7 +14,9 @@ function encodeImageFile(element) {
 }
 
 // Triggers when the user sends his message
-async function sendRequest() {
+// Also warning, this is one monster of a function and changing it could even affect the backend
+// Change with care and consult the Documentary that does not exist yet
+async function sendRequest(role) {
     const textarea = document.getElementById("query");
     aiMessage = "";
     
@@ -28,15 +31,19 @@ async function sendRequest() {
     }
     
     // Retrieve that messageObjects container element
-    messageElements.push(new Message("user"));
-    messageElements[messageElements.length - 1].pushText(textarea.value);
-    await saveMessage("user", textarea.value, activeConversation.id);
-    activeMessage = new Message("assistant");
-    messageElements.push(activeMessage);
-    activeMessage.outline = true;
-    activeMessage.outlineShape = 'transparent, #00d0ff';
+    if (role !== "system")
+    {
+        console.log("User requested message");
+        messageElements.push(new Message("user"));
+        messageElements[messageElements.length - 1].pushText(textarea.value);
+        await saveMessage("user", textarea.value, activeConversation.id);
+        activeMessage = new Message("assistant");
+        messageElements.push(activeMessage);
+        activeMessage.outline = true;
+        activeMessage.outlineShape = 'transparent, #00d0ff';
+    }
     
-    // Build request
+    // Construct request
     let url = "http://localhost:11434/api/chat";
     const data = {
         "model": "custllama3.1",
@@ -46,6 +53,7 @@ async function sendRequest() {
     // Clear the user's input field
     textarea.value = "";
 
+    // Specify request options
     const requestOptions = {
         method: "POST",
         headers: {
@@ -72,7 +80,7 @@ async function sendRequest() {
                             // Fetch the individual words
                             await controller.enqueue(value);
                             let json = JSON.parse(new TextDecoder().decode(value));
-                            //console.log(json);
+                            
                             let word = json.message.content;
                             // Todo: Rework this to support more complex syntax
                             //      also implementing an ongoing stream across many messageObjects to expand upon scripts -- oh boi, i don't think this will happen anytime soon
@@ -231,9 +239,12 @@ async function sendAction(code) {
                 }
             });
 
+            // Used to store the result as a JSON object
             let result = { data: [] };
 
+            // Loop through the entire answer object and look for data, errors and exit codes
             answerArray.forEach(obj => {
+                // Push the corresponding one if found
                 if ('data' in obj) {
                     result.data.push(obj.data);
                 }
@@ -250,29 +261,40 @@ async function sendAction(code) {
                 }
             });
 
+            // If it had no data, delete the data field
             if (result.data.length === 0) {
                 delete result.data;
             }
             
+            // If it had, assign it
             else {
                 result.data = result.data.join('\\n');
             }
             
+            // If it had an error, create error field
             if (result.error)
             {
                 activeMessage.pushError(result.error);
             }
             
+            // Create new message objects and push them to the message Array
             messageObjects.push({"role": "assistant", "content": aiMessage});
             messageObjects.push({"role": "system", "content": JSON.stringify(result)});
+            
+            // Save the system message in the database
             saveMessage("system", JSON.stringify(result), activeConversation.id);
+            
+            // Feed the output of that request back to the AI for validation (can lead to never ending loops)
+            sendRequest("system");
         })
+        // Abusing the pyout error handling to display my shitty programming mistakes
         .catch((err) => {
             activeMessage.pushError(err);
             activeMessage.setCode(1);
         });
 }
 
+// Get all the conversations from the database and return them as and array
 async function generateConversations() {
     let res = [];
     let url = `http://localhost:3000/conversation`;
@@ -293,6 +315,7 @@ async function generateConversations() {
     return res;
 }
 
+// Save a message to the database
 async function saveMessage(role, message, conversationId) {
     let url = `http://localhost:3000/message/${conversationId}`;
     let requestOptions = {
@@ -307,6 +330,7 @@ async function saveMessage(role, message, conversationId) {
         .then(res => res.json());
 }
 
+// Requests all messages of a conversation from the backend
 async function getMessages(id) {
     let res = [];
     let url = `http://localhost:3000/message/${id}`;
