@@ -3,7 +3,7 @@ let reader = new FileReader();
 // HTML Elements that need to be global
 let chatbox;
 let query;
-let messageObjects;
+let messageObjects; // Todo: This does not need to be global -_-
 
 // Conversation configuration -> Todo: Let Users edit this
 let assistantName = "Synthia";
@@ -58,7 +58,7 @@ window.onload = async function() {
             conversations.forEach( c => { c.object.setAttribute("active", "false") });
             activeConversation = conversation;
             conversation.object.setAttribute("active", "true");
-            await updateMessages();
+            await updateMessages(activeConversation);
             // Custom Method, scrolls down, takes force and behavior as inputs
             updateScroll(true, 'instant');
         });
@@ -86,6 +86,7 @@ window.onload = async function() {
             // Reset size, works half of the time
             this.style.height = 'auto';
             this.style.height = `min(${this.scrollHeight}px, 100px)`;
+            return false;
         }
     });
 
