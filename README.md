@@ -2,7 +2,7 @@
 ## Before we begin
 This application is in the earliest of its stages.
 I have worked on this for a long time, and a lot has happened since I started.
-But this project is light-years away from being finished, and with the current rate of change in the
+But this project is still light-years away from being finished, and with the current rate of change in the
 (OpenSource) AI Industry, it will be in this state for a long time.
 
 This is the first (kind of) working prototype of this project.
@@ -26,13 +26,19 @@ which will be shipped with a custom interpreter like Python, but this thought re
 As for now, my main goals are to finish some features I've been working on for quite some time now,
 (Spoiler: Yes, there are many yet unused code sections, but they exist for future use — mostly...)
 as well as reworking this nightmare of a realtime code detector.
+I have also applied for a Google Home API key, just to see if this can turn my lights on and off.
+However, this will be of no real use and is potentially even dangerous
+if your smart-home Installation contains more than just lights.
+Actually, this entire project is pretty dangerous, and I am actually kind of surprised
+that it didn't nuke my entire filesystem yet (Yes, it tried once after shutting down my PC).
 
-Aside from these clear goals,
+Aside from these somewhat clear goals,
 I will also test this program with different AI models to find the most optimal one for this rather niche Application.
 So far I've been using llama3.1:7b but since then my hardware has improved, so I will be testing with larger models
 from now on.
-I think another big problem is the initial prompt, since I have absolutely no Idea to prompt an LLM the right way.
+I think another big problem is the initial prompt, since I have absolutely no idea how to prompt an LLM the right way.
 
+And now, enjoy getting this to work :)
 
 ## 1 Description
 This Repository provides a backend, as well as the according frontend to interact with an LLM.
