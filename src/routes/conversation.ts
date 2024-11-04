@@ -16,7 +16,6 @@ const messagePostSchema = z.object({
 conversationRoute.get('/conversation', async (req, res) => {
     try {
         let conversations = await Conversation.find();
-        console.log(conversations);
         return res.status(200).json({"conversations": conversations});
     }
 
