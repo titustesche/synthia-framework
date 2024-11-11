@@ -16,18 +16,19 @@ function encodeImageFile(element) {
 // Triggers when the user sends his message
 // Also warning, this is one monster of a function and changing it could even affect the backend
 // Change with care and consult the Documentary that does not exist yet
-async function sendRequest(role) {
+async function sendRequest(role, query) {
     const textarea = document.getElementById("query");
+    query = query !== undefined ? query : textarea.value;
     aiMessage = "";
     
     // Add the message to the "messageObjects" object
     try
     {
-        messageObjects.push({"role": "user", "content": textarea.value, "images": [reader.result.split(',')[1]]});
+        messageObjects.push({"role": "user", "content": query, "images": [reader.result.split(',')[1]]});
     }
     catch
     {
-        messageObjects.push({"role": "user", "content": textarea.value});
+        messageObjects.push({"role": "user", "content": query});
     }
     
     // Retrieve that messageObjects container element
@@ -46,7 +47,7 @@ async function sendRequest(role) {
     // Construct request
     let url = "http://localhost:11434/api/chat";
     const data = {
-        "model": "custllama3.1",
+        "model": "qwen2.5:14b",
         "messages": messageObjects,
     };
 
@@ -278,14 +279,15 @@ async function sendAction(code) {
             }
             
             // Create new message objects and push them to the message Array
+            let textResult = JSON.stringify(result);
             messageObjects.push({"role": "assistant", "content": aiMessage});
-            messageObjects.push({"role": "system", "content": JSON.stringify(result)});
+            messageObjects.push({"role": "system", "content": textResult});
             
             // Save the system message in the database
-            saveMessage("system", JSON.stringify(result), activeConversation.id);
+            saveMessage("system", textResult, activeConversation.id);
             
             // Feed the output of that request back to the AI for validation (can lead to never ending loops)
-            sendRequest("system");
+            sendRequest("system", textResult);
         })
         // Abusing the pyout error handling to display my shitty programming mistakes
         .catch((err) => {
