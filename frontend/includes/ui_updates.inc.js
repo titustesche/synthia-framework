@@ -27,9 +27,11 @@ class Message {
     role;
     // The message's HTML element
     object;
-    // The message's header child elements
+    // The message's header child element
     header;
+    // The message's body element
     body;
+    // The message's pyout elements
     pyout;
     pyoutResult;
     pyoutCode;
@@ -41,7 +43,17 @@ class Message {
     //  but i like this approach so i'm gonna implement it
     get outline() { return this._outline; }
     get outlineShape() { return this._outlineShape; }
-    set outline(outline) { this._outline = outline; this.toggleOutline(); }
+    set outline(outline) { this._outline = outline;
+        switch (this._outline) {
+            case true:
+                this.object.setAttribute("outline", "true");
+                break;
+
+            case false:
+                this.object.setAttribute("outline", "false");
+                break;
+        }
+    }
     set outlineShape(outlineShape) { this._outlineShape = outlineShape; cssRoot.style.setProperty("--outline-shape", this._outlineShape); }
     
     // Default construct for a message
@@ -67,7 +79,8 @@ class Message {
         else { updateScroll(); }
     }
     
-    // Does what it says
+    // Does what it says - deprecated
+    /*
     toggleOutline() {
         switch (this._outline) {
             case true:
@@ -79,6 +92,7 @@ class Message {
                 break;
         }
     }
+     */
     
     // Also does what it says
     createHeader() {
@@ -170,6 +184,7 @@ class Message {
 async function updateMessages(conversation) {
     // Get all the messages
     messageObjects = await getMessages(conversation.id);
+    console.log(messageObjects);
     // Clear Elements and current Chatbox
     messageElements = [];
     chatbox.innerHTML = "";
@@ -192,12 +207,14 @@ async function renderMessages(messages) {
                 let output = JSON.parse(messages[i].content);
                 activeMessage.createPyout();
                 if (output.data !== undefined) {
-                    messages.pushResult((output.data).replaceAll('\\n', '\n'));
+                    activeMessage.pushResult((output.data).replaceAll('\\n', '\n'));
                 }
                 if (output.error !== undefined) {
-                    messages.pushError(output.error);
+                    activeMessage.pushError(output.error);
                 }
-                messages.setCode(output.code);
+                if (output.code !== undefined) {
+                    activeMessage.setCode(output.code);
+                }
             }
             updateScroll();
             
