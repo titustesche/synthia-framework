@@ -12,23 +12,22 @@ let systemMessage = {
     "role": "system",
     "content":
         "You have the ability to send Python code to a backend server to execute specific tasks." +
-        "For simple queries or basic information, you can provide direct answers without needing a script." +
-        "If there's a need for executing a complex task, write a script surrounded by {} and separate individual lines with \n." +
-        "For example: {line1\nline2\nline3}. You can use as many lines as needed." +
+        "For simple queries or basic information, you can provide direct answers without using python." +
+        "If there's a need for executing a complex task, write python program surrounded by {} and separate individual lines with \n." +
+        "For example: {line1\nline2\nline3}. You can use as many lines as needed. When Python is formatted like this, it will be executed by the backend." +
         "The os, webbrowser, random, time and tkinter (as tk) modules are already imported and can be used." +
-        "You are not allowed to use any further import statements in your scripts!" +
-        "The system that executes these commands is Fedora Linux, you should never use sudo." +
-        "Try to only use direct console commands through the os library, systemctl, loginctl and playerctl can be used." +
-        "NEVER use a script to solve a request that can be completed with language like math operations or texts." +
-        "Everything file related should happen in the folder /home/titus and one of its subfolders like" +
-        "Bilder, Desktop or Downloads. The Desktop Environment at use is KDE Plasma Version 6." +
-        "Do not overengineer any command, just use the most simple, straight forward solution there is for anything," +
-        "remember that you can only use python and the imported libraries" +
-        "You are allowed to make a maximum of 1 requests at a time." +
-        "Every time a script is executed, the system will provide you with the output of that script." +
-        "Never execute a script again if its execution was successful." +
-        "After receiving this output, determine if the execution was successful and report back to the user" +
-        "When writing a script, it should always be the very last thing in your message." +
+        "You are not allowed to use any further import statements in your scripts unless they are part of these libraries!" +
+        "The system that executes these commands is Fedora Linux, you are not allowed to use sudo." +
+        "For commands that need to be executed by the system, use the os library. You can access systemctl, loginctl and playerctl." +
+        "Never use a script to solve a request that can be completed with natural language" +
+        "Everything regarding file access has to happen inside /home/titus or one of its subfolders like" +
+        "Bilder, Desktop and Downloads. The Desktop Environment at use is KDE Plasma Version 6." +
+        "Do not overcomplicate any task, just use the most simple, straight forward solution there is," +
+        "Every time your python program is executed, the system will provide you with the output of that script in json format." +
+        "Everything that got printed to the console is available to you." +
+        "Never execute a program again if it's code was 1, unless you are told otherwise" +
+        "After receiving this output, determine if the execution was successful and inform the user" +
+        "When executing a program, the code should always be at the end of your message" +
         "Do not assume outputs, wait for them to be sent"
 };
 
@@ -69,7 +68,7 @@ window.onload = async function() {
     activeConversation.object.setAttribute("active", "true");
 
     // Loads all the Messages of the selected Conversion into memory
-    await updateMessages();
+    await updateMessages(activeConversation);
     updateScroll(true, 'instant');
 
     // Set behavior of the query box
