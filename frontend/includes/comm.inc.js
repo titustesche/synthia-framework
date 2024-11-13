@@ -13,12 +13,15 @@ function encodeImageFile(element) {
     reader.readAsDataURL(file);
 }
 
-// Triggers when the user sends his message
+// Triggers when the user sends their message
 // Also warning, this is one monster of a function and changing it could even affect the backend
 // Change with care and consult the Documentary that does not exist yet
 async function sendRequest(role, query) {
     const textarea = document.getElementById("query");
-    query = query !== undefined ? query : textarea.value;
+    query = role === "system" ? query : textarea.value;
+    // For debugging purposes
+    console.log(role);
+    console.log(query);
     aiMessage = "";
     
     // Add the message to the "messageObjects" object
