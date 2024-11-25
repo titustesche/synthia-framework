@@ -1,0 +1,2 @@
+This section of the Wiki covers all standalone Methods in this project.
+Note that many of them will move into their own classes in the future so this documentation will not be as up to date as some of the other ones.

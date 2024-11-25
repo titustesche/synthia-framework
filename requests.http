@@ -1,0 +1,20 @@
+### Chat
+POST http://localhost:3000/chat/1 HTTP/2
+Content-Type: application/json
+Accept: application/stream+json
+
+{
+  "model": "qwen2.5:14b",
+  "role": "user",
+  "query": "Can you write a poem",
+  "images": []
+}
+
+### Action
+POST http://localhost:3000/action
+Content-Type: application/json
+
+
+{
+  "query": "for i in range(10):\n    print(i)\n    time.sleep(1)"
+}
