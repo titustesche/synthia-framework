@@ -38,6 +38,9 @@ So far I've been using llama3.1:7b but since then my hardware has improved, so I
 from now on.
 I think another big problem is the initial prompt, since I have absolutely no idea how to prompt an LLM the right way.
 
+If you are a developer yourself and want to modify it for your own use case,
+I would highly recommend reading [Documentation](Documentation/Documentation%20-%20Welcome.md)!
+
 And now, enjoy getting this to work :)
 
 ## 1 Description
