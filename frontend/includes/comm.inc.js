@@ -13,11 +13,61 @@ function encodeImageFile(element) {
     reader.readAsDataURL(file);
 }
 
+async function Request()
+{
+    const textarea = document.getElementById("query");
+    let body = {
+            model: "qwen2.5:14b",
+            role: "user",
+            query: textarea.value,
+            images: []
+    }
+    let options = {
+        method: "POST",
+        headers:
+            {
+                "Content-Type": "application/json"
+            },
+        body: JSON.stringify(body),
+    }
+    
+    fetch('http://localhost:3000/chat/1', options)
+        .then(response => response.body)
+        .then(rb => {
+            const reader = rb.getReader();
+
+            return new ReadableStream({
+                start(controller) {
+                    function push() {
+                        reader.read().then(async ({done, value}) => {
+                            // Close connection if done is set to true
+                            if (done) {
+                                controller.close();
+                                return;
+                            }
+                            // Fetch the individual words
+                            await controller.enqueue(value);
+                            let json = JSON.parse(new TextDecoder().decode(value));
+                            console.log(json);
+                            push();
+                        });
+                    }
+                    push();
+                }
+            });
+        })
+        .then(stream =>
+            new Response(stream, { headers: { "Content-Type": "text/html" } }).text()
+        )
+        .then(async (result) => {
+            
+        });
+}
+
 // Triggers when the user sends their message
 // Also warning, this is one monster of a function and changing it could even affect the backend
 // Change with care and consult the Documentary that does not exist yet
 async function sendRequest(role, query) {
-    const textarea = document.getElementById("query");
     query = role === "system" ? query : textarea.value;
     // For debugging purposes
     console.log(role);
