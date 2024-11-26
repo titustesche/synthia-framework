@@ -37,6 +37,15 @@ let cssRoot;
 let activeMessage;
 let activeConversation;
 
+// Todo: wieder implementieren
+const codes = Object.freeze({
+    SUCCESS: 0,
+    ERROR: 1,
+    WRITING: 2,
+    RUNNING: 3,
+    INPUT_REQUIRED: 4, //Not in use
+})
+
 // Shit that needs to be done when the site is first loaded
 window.onload = async function() {
     // Assign important Elements
@@ -80,7 +89,7 @@ window.onload = async function() {
             // Suppress default behavior
             e.preventDefault();
             // Custom Function, sends a request to the specified backend Server
-            sendRequest();
+            Request();
             // Reset size, works half of the time
             this.style.height = 'auto';
             this.style.height = `min(${this.scrollHeight}px, 100px)`;
