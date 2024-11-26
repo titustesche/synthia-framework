@@ -40,8 +40,10 @@ I think another big problem is the initial prompt, since I have absolutely no id
 
 If you are a developer yourself and want to modify it for your own use case,
 I would highly recommend reading [Documentation](Documentation/Documentation%20-%20Welcome.md)!
+Also feel free to let me know what you use this for,
+I am quite interested in what other use cases people can come up with.
 
-And now, enjoy getting this to work :)
+And now, enjoy getting this mess to work :)
 
 ## 1 Description
 This Repository provides a backend, as well as the according frontend to interact with an LLM.
