@@ -148,25 +148,25 @@ class Message {
         this.pyoutCode.innerHTML = `Status: ${code}`;
         switch (code) {
             // 1 and 0 are for program exits
-            case 1:
+            case codes.ERROR:
                 this.pyoutCode.style.backgroundColor = '#af0000';
                 this.outlineShape = '#ff0000';
                 this.pyoutResult.setAttribute("textCursor", "false");
                 break;
             
-            case 0:
+            case codes.SUCCESS:
                 this.pyoutCode.style.backgroundColor = '#005900';
                 this.outlineShape = '#00ff00';
                 this.pyoutResult.setAttribute("textCursor", "false");
                 break;
                 
             // These are for when the request is still being executed
-            case "Running":
+            case codes.RUNNING:
                 this.pyoutCode.style.backgroundColor = '#a15b00';
                 this.outlineShape = '#d89716';
                 break;
                 
-            case "Writing":
+            case codes.WRITING:
                 this.pyoutCode.style.backgroundColor = '#001ba3';
                 this.outlineShape = '#0033ff';
                 break;
