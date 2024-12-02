@@ -189,7 +189,7 @@ async function sendRequest(role, query) {
                                         actionBuffer += word;
                                         // Notify the user
                                         activeMessage.createPyout()
-                                        activeMessage.setCode("Writing");
+                                        activeMessage.setCode(codes.WRITING);
                                     }
                                     break;
                             }
@@ -220,7 +220,7 @@ async function sendRequest(role, query) {
 
 // This function handles communication with the backend
 async function sendAction(code) {
-    activeMessage.setCode("Running");
+    activeMessage.setCode(codes.RUNNING);
     // Clear up the requested code if it contains unwanted letters
     while (code.charAt(code.length -1 ) === "}" || code.charAt(code.length -1 ) === "\n" || code.charAt(code.length -1 ) === " ") {
         code = code.substring(0, code.length - 1);
@@ -345,7 +345,7 @@ async function sendAction(code) {
         // Abusing the pyout error handling to display my shitty programming mistakes
         .catch((err) => {
             activeMessage.pushError(err);
-            activeMessage.setCode(1);
+            activeMessage.setCode(codes.ERROR);
         });
 }
 

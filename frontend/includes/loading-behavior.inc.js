@@ -41,9 +41,9 @@ let activeConversation;
 const codes = Object.freeze({
     SUCCESS: 0,
     ERROR: 1,
-    WRITING: 2,
-    RUNNING: 3,
-    INPUT_REQUIRED: 4, //Not in use
+    WRITING: "Writing",
+    RUNNING: "Running",
+    INPUT_REQUIRED: "Waiting for Input", //Not in use
 })
 
 // Shit that needs to be done when the site is first loaded
