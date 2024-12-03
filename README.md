@@ -1,4 +1,4 @@
-# Synthia
+# Synthia Framework
 ## Before we begin
 This application is in the earliest of its stages.
 I have worked on this for a long time, and a lot has happened since I started.
@@ -36,10 +36,17 @@ Aside from these somewhat clear goals,
 I will also test this program with different AI models to find the most optimal one for this rather niche Application.
 So far I've been using llama3.1:7b but since then my hardware has improved, so I will be testing with larger models
 from now on.
+
+Update on the Models:
+The current "very supported" model is qwen2.5:14b, as it is way better at following instructions and doesn't mess up
+code nearly as often as Llama. It can also deal with much more complicated Coding tasks to begin with.
+I will however extend my testing to qwen2.5-coder:14b and qwen2.5:32b,
+but I highly doubt that my PC will be happy about the last one.
+
 I think another big problem is the initial prompt, since I have absolutely no idea how to prompt an LLM the right way.
 
 If you are a developer yourself and want to modify it for your own use case,
-I would highly recommend reading [Documentation](Documentation/Documentation%20-%20Welcome.md)!
+I would highly recommend reading the [Documentation](Documentation/Documentation%20-%20Welcome.md)!
 Also feel free to let me know what you use this for,
 I am quite interested in what other use cases people can come up with.
 
@@ -58,15 +65,16 @@ change that too in Line 105. After that,
 install the dependencies of the Project using `npm i` while inside the `/src` folder.
 
 Finally, you can run `index.ts` with `node --require ts-node/register index.ts`.
+
+**Note:** `ts-node` has to be installed globally.
+
 The console should look like this:
 > $ node --require ts-node/register index.ts <br/>
 > Data source initialized <br/>
 > App listening on 3000
 
 If this is the case, you can open `index.html` in a browser of your choice (tested with Firefox) and start chatting.
-Note that both the backend Server and ollama have to be running to gain full functionality.
-Alternatively, you can use just the frontend located in the `/frontend` directory
-to purely interact with ollama without script execution.
+Note that both the backend Server and ollama have to be running in order to actually chat with the AI.
 Note that the frontend will try to send everything typed between { } to the backend.
 This will be fixed in a future update when I finally decide to rework the entire
 command detection system to finally take Database calls into account.
