@@ -1,13 +1,13 @@
 import {Router} from "express";
 import {z} from "zod";
 import {processRequestBody} from "zod-express-middleware";
-import conversation from "./conversation";
 import {Conversation} from "../database/entities/Conversation";
-import {aiRequest} from "../requestHandler";
 import {Message} from "../database/entities/Message";
+import {Request} from "../classes/Request";
 
 const chatRoute = Router();
 const chatSchema = z.object({
+    url: z.string(),
     model: z.string(),
     role: z.string(),
     query: z.string(),
@@ -34,60 +34,59 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
             return res.write(JSON.stringify({error: "Conversation does not exist"}));
         }
 
-        // If it exists
-        else {
-            // Store body contents
-            let model = req.body.model;
-            let role = req.body.role;
-            let query = req.body.query;
-            let images = req.body.images;
+        // Create a new request
+        let request = new Request();
+        request.url = req.body.url;
+        request.model = req.body.model;
+        request.role = req.body.role;
+        request.query = req.body.query;
+        request.conversation = conversation;
+        request.images = req.body.images;
 
-            // Create a new message for the user and store it in the database
-            let userMessage = new Message();
-            userMessage.role = role;
-            userMessage.content = query;
-            userMessage.conversation = conversation;
+        // Log that requests information to the console (debugging)
+        console.log(request.getinfo());
 
-            await userMessage.save();
+        // Send the request and store its EventEmitter as response
+        const responseStream = await request.Send();
 
-            // Create a new message for the assistant and leave its contents blank
+        // On incoming data
+        responseStream.on("data", data => {
+            // Send the incoming data
+            res.write(JSON.stringify({data: data}));
+            res.flushHeaders();
+        });
+
+        // When the stream ends
+        responseStream.on("end", async (exitMessage) => {
+            // Save the assistant message and end the stream
+            res.write(JSON.stringify({exit: exitMessage}));
+            res.flushHeaders();
+            res.end();
+
+            // Create a new message for the assistant and upload it to the database
             let assistantMessage = new Message();
-            assistantMessage.role = "assistant";
+            assistantMessage.role = request.response.message.role;
             assistantMessage.conversation = conversation;
-            assistantMessage.content = "";
+            assistantMessage.content = request.response.message.content;
+            await assistantMessage.save();
 
-            // Call aiRequest function (returns EventEmitter)
-            const response = await aiRequest(model, role, query, images, conversation);
+            console.log(JSON.stringify(request.response));
+            return;
+        });
 
-            // On incoming data
-            response.on("data", data => {
-                // Add this data to the assistant message's contents
-                assistantMessage.content += data;
-                res.write(JSON.stringify({data: data}));
-                res.flushHeaders();
-            });
-
-            // When the stream ends
-            response.on("end", async (exitMessage) => {
-                // Save the assistant message and end the stream
-                await assistantMessage.save();
-                res.write(JSON.stringify({exit: exitMessage}));
-                res.flushHeaders();
-                res.end();
-            });
-
-            // If an error occurs
-            response.on("error", (error) => {
-                // Report that error and send the stream
-                res.write(JSON.stringify({"error": error}));
-                res.flushHeaders();
-                res.end();
-            });
-        }
+        // If an error occurs
+        responseStream.on("error", (error) => {
+            // Report that error and send the stream
+            res.write(JSON.stringify({"error": error}));
+            res.flushHeaders();
+            res.end();
+            return;
+        });
     }
 
     catch (e) {
         console.error(e);
+        return;
     }
 });
 
