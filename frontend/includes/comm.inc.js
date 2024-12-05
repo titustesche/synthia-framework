@@ -17,10 +17,11 @@ async function Request()
 {
     const textarea = document.getElementById("query");
     let body = {
-            model: "qwen2.5:14b",
-            role: "user",
-            query: textarea.value,
-            images: []
+        url: "http://localhost:11434/api/chat",
+        model: "qwen2.5-coder:14b",
+        role: "user",
+        query: textarea.value,
+        images: []
     }
     let options = {
         method: "POST",
