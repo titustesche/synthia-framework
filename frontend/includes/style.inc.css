@@ -15,11 +15,12 @@ html {
 body {
     margin: 0;
     height: 100vh;
-    background-image: url('/img/bg.jpg');
+    background: radial-gradient(ellipse at center, #141414 0%, #000000 100%);
     background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
+    animation: 5s pulse infinite ease-in-out;
 }
 
 .container {
@@ -169,7 +170,7 @@ body {
 
 .conversation:hover::before, .conversation[active="true"]::before {
     filter: blur(5px);
-    background-image: repeating-linear-gradient(45deg, red, #ff00ff, blue);
+    background-image: repeating-linear-gradient(90deg, #ff5e00, #ff00ff, blue);
 }
 
 
@@ -284,10 +285,10 @@ body {
     height: 12px;
     background: #bfbfbf;
     display: inline-block;
-    animation: 1s pulse infinite step-end;
+    animation: 1s blink infinite step-end;
 }
 
-@keyframes pulse {
+@keyframes blink {
     0% {
         background: black;
     }
