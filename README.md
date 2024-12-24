@@ -53,18 +53,14 @@ I am quite interested in what other use cases people can come up with.
 And now, enjoy getting this mess to work :)
 
 ## 1 Description
-This Repository provides a backend, as well as the according frontend to interact with an LLM.
-It enables the LLM to write python scripts that can be executed by the backend,
+This Repository provides a backend to interact with an LLM.
+It enables the LLM to write python scripts that can be executed,
 allowing better integration with the own PC if hosted there.
 
 ## 2 Installation
 ### 2.1 If you have Ollama and Node installed
-Change your preferred model in `/frontend/includes/main.inc.js, Line 107`.
-In case that you have configured `ollama` to use another port than the default one,
-change that too in Line 105. After that,
-install the dependencies of the Project using `npm i` while inside the `/src` folder.
-
-Finally, you can run `index.ts` with `node --require ts-node/register index.ts`.
+Install all the dependencies of the Project using `npm i` while inside the `/src` folder.
+Run `index.ts` with `node --require ts-node/register index.ts`.
 
 **Note:** `ts-node` has to be installed globally.
 
@@ -73,11 +69,9 @@ The console should look like this:
 > Data source initialized <br/>
 > App listening on 3000
 
-If this is the case, you can open `index.html` in a browser of your choice (tested with Firefox) and start chatting.
-Note that both the backend Server and ollama have to be running in order to actually chat with the AI.
-Note that the frontend will try to send everything typed between { } to the backend.
-This will be fixed in a future update when I finally decide to rework the entire
-command detection system to finally take Database calls into account.
+If this is the case, you can either use my frontend or write your own. If you decide to write your own frontend,
+consider reading the Documentation for better understanding of the API. 
+Note that  ollama has to be running in order to chat with the AI.
 
 ### 2.2 Setting up mariadb
 To use this Application, you need to have mariadb installed and set up a user account for the backend to use.
@@ -101,21 +95,17 @@ access to the `ai_memory` database.
 Since this program has been developed entirely on Linux,
 I will only include instructions for the most common Linux distros.
 
-#### 2.3.1 Fedora
-Install Node and Ollama using `sudo dnf install ollama node`.
+#### 2.3.1 Linux
+Install Node and Ollama using your package manager (eg: `sudo dnf install ollama node`).
 When the installation is finished, pick a model from the [Ollama Library](https://ollama.com/library)
 and follow the instructions on the site to download it.
-After that, follow the steps described in 2.1 to set up your environment.
+After that, follow the steps described in 2.1 and 2.2 to set up your environment.
 
-#### 2.3.2 Ubuntu
-Install Node and Ollama using `sudo apt-get install ollama node`.
-When the installation is finished, pick a model from the [Ollama Library](https://ollama.com/library)
-and follow the instructions on the site to download it.
-After that, follow the steps described in 2.1 to set up your environment.
-
-#### 2.3.3 Windows
+#### 2.3.2 *Windows
 I will eventually try to set everything up on Windows and post detailed descriptions here,
 but for now that is at the very bottom of my priority list as the program itself will still change drastically.
 
-#### 2.3.4 Mac
+#### 2.3.3 *Mac
 Nope, unless you figure it out yourself.
+
+* Some functionality is heavily impacted by these Operating Systems
