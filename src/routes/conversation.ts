@@ -27,6 +27,32 @@ conversationRoute.get('/conversation', async (req, res) => {
     }
 });
 
+conversationRoute.delete('/conversation/:id', async (req, res) => {
+    try {
+        let conversation = await Conversation.findOneOrFail({
+            where: {
+                id: +req.params.id
+            }
+        });
+
+        if (!conversation) {
+            return res.status(404).json({error: "Conversation does not exist"});
+        }
+
+        await Conversation.delete({
+            id: conversation.id
+        });
+
+        return res.status(200);
+    }
+
+    catch (e) {
+        console.error(e);
+        return res.status(500).json({"error": e});
+    }
+});
+
+// Create a new conversation
 conversationRoute.post('/conversation', processRequestBody(convoPostSchema), async (req, res) => {
     try {
         let conversation = new Conversation();
