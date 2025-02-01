@@ -15,7 +15,7 @@ export class Request {
     public messages: {role: string; content: string}[];
     public response: {
         model: string,
-        message: {role: string; content: string}
+        message: {role: string; blocks: { type: string; content: string }[] };
         actions: {
             // Don't ask me, this was JetBrains AI
             type: typeof actionTypes[keyof typeof actionTypes],
@@ -25,6 +25,9 @@ export class Request {
     };
     public query: string;
     public images: string[];
+
+    private isThinking: boolean;
+    private isScripting: boolean;
 
     getinfo(): string {
         return `
@@ -97,14 +100,16 @@ export class Request {
                 model: this.model,
                 message: {
                     role: "assistant",
-                    content: "",
+                    blocks: [],
                 },
                 actions: [
+                    /*
                     {
                         type: actionTypes.databaseRead,
                         data: "print('Hello World!')",
                         success: true,
                     }
+                    */
                 ],
             };
 
@@ -113,12 +118,55 @@ export class Request {
 
             // On incoming data
             res.data.on("data", (chunk: Buffer) => {
-                // Todo: Create a function that can be called that
+                // Convert the chunk to JSON Format for reading
+                let convertedChunk = JSON.parse(chunk.toString()).message.content;
 
-                // Fill the response message field
-                this.response.message.content += JSON.parse(chunk.toString()).message.content;
+                // If the received word is <think>
+                if (convertedChunk.includes("<think>")) {
+                    // ENTER THINKING MODE RIGHT NOW
+                    this.isThinking = true;
+
+                    this.response.message.blocks.push({
+                        type: "think",
+                        content: "",
+                    });
+                    return;
+                }
+
+                if (convertedChunk.includes("</think>")) {
+                    // Leave thinking mode
+                    this.isThinking = false;
+
+                    this.response.message.blocks.push({
+                        type: "text",
+                        content: "",
+                    });
+                    return;
+                }
+
+                if (convertedChunk.includes("<script>")) {
+                    this.isScripting = true;
+
+                    this.response.message.blocks.push({
+                        type: "script",
+                        content: "",
+                    });
+                }
+
+                if (convertedChunk.includes("</script>")) {
+                    this.isScripting = false;
+
+                    this.response.message.blocks.push({
+                        type: "text",
+                        content: "",
+                    });
+                }
+
+                let activeBlock = this.response.message.blocks[this.response.message.blocks.length - 1];
+                activeBlock.content += convertedChunk;
+
                 // Emit the incoming data
-                emitter.emit("data", JSON.parse(chunk.toString()).message.content);
+                emitter.emit("data", {type: activeBlock.type, data: convertedChunk});
             });
 
             // When the stream ends
@@ -133,6 +181,8 @@ export class Request {
         // If an error occurs, emit that error
         catch (e) {
             emitter.emit("error", e);
+            // Return the Emitter
+            return emitter;
         }
     }
 }
