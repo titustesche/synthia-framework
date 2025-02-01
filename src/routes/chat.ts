@@ -31,7 +31,9 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
 
         // Return with error
         if (!conversation) {
-            return res.write(JSON.stringify({error: "Conversation does not exist"}));
+            res.write(JSON.stringify({error: "Conversation does not exist"}));
+            res.flushHeaders();
+            return res.end();
         }
 
         // Create a new request
@@ -43,16 +45,14 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
         request.conversation = conversation;
         request.images = req.body.images;
 
-        // Log that requests information to the console (debugging)
-        console.log(request.getinfo());
-
         // Send the request and store its EventEmitter as response
         const responseStream = await request.Send();
 
         // On incoming data
         responseStream.on("data", data => {
             // Send the incoming data
-            res.write(JSON.stringify({data: data}));
+            console.log(data);
+            res.write(JSON.stringify(data));
             res.flushHeaders();
         });
 
@@ -67,10 +67,10 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
             let assistantMessage = new Message();
             assistantMessage.role = request.response.message.role;
             assistantMessage.conversation = conversation;
-            assistantMessage.content = request.response.message.content;
+            assistantMessage.content = JSON.stringify(request.response.message.blocks);
             await assistantMessage.save();
 
-            console.log(JSON.stringify(request.response));
+            console.log(request.getinfo());
             return;
         });
 
