@@ -11,6 +11,10 @@ export const AppDataSource = new DataSource({
     username: 'synthia_framework',
     password: '1234',
     database: 'synthia_framework',
+    charset: 'utf8mb4',
+    extra: {
+        collation: 'utf8mb4_unicode_ci',
+    },
     entities: [Memory, Conversation, Message, User],
     synchronize: true
 });
