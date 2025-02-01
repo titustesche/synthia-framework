@@ -10,7 +10,11 @@ export class Message extends BaseEntity {
     @Column()
     role: string;
 
-    @Column({ type: 'text' })
+    @Column({
+        type: 'text',
+        charset: 'utf8mb4',
+        collation: 'utf8mb4_unicode_ci',
+    })
     content: string;
 
     @ManyToOne(() => Conversation, (conversation) => conversation.messages, {onDelete: "CASCADE"})
