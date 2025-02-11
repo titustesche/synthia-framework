@@ -116,6 +116,10 @@ export class Request {
             // Store the response
             const res = await axios.post(this.url, this.data, { responseType: "stream"});
 
+            // Todo:
+            //  Rework tag detection entirely, maybe listen as soon as a message includes a <
+            //  and then listen for the next words to determine what tag it is?
+
             // On incoming data
             res.data.on("data", (chunk: Buffer) => {
                 // Convert the chunk to JSON Format for reading
