@@ -14,7 +14,16 @@ Accept: application/stream+json
 POST http://localhost:3000/action
 Content-Type: application/json
 
-
 {
   "query": "for i in range(10):\n    print(i)\n    time.sleep(1)"
+}
+
+### Create a User
+POST http://localhost:3000/user
+Content-Type: application/json
+
+{
+  "name": "Example user",
+  "email": "email@example.com",
+  "password": "SuperSecurePa55word!"
 }

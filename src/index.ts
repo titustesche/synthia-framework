@@ -3,6 +3,7 @@ import {AppDataSource} from "./database/data-source";
 import actionRoute from "./routes/actions";
 import conversationRoute from "./routes/conversation";
 import chatRoute from "./routes/chat";
+import userRoute from "./routes/user";
 // Keep these as require even if your IDE tells you otherwise, it won't work otherwise, dunno why
 const cors = require("cors");
 const Express = require("express");
@@ -14,6 +15,7 @@ app.use(databaseRoute);
 app.use(actionRoute);
 app.use(conversationRoute);
 app.use(chatRoute);
+app.use(userRoute);
 
 const port = 3000;
 
