@@ -1,33 +1,38 @@
 import torch
 from diffusers import StableDiffusion3Pipeline
 
-model_path = "/home/titus/KI-Modelle/stable-diffusion-3.5-large"
+model_path = "models/<model>"
 
+# ROCm 6.4 Konfiguration
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-torch_dtype = torch.float16  # ROCm prefers float16
+torch.backends.cudnn.benchmark = True
 
-# Load pipeline
+# Pipeline mit optimierten Einstellungen für ROCm
 pipeline = StableDiffusion3Pipeline.from_pretrained(
     model_path,
-    torch_dtype=torch_dtype,
+    torch_dtype=torch.float16,  # float16 statt bfloat16 für bessere ROCm-Kompatibilität
+    variant="fp16",
+    use_safetensors=True
 )
 
-# Enable memory-efficient attention
-pipeline.enable_attention_slicing()
-
+# Optimierungen für Speichernutzung
 pipeline.to(device)
+pipeline.enable_attention_slicing(slice_size="auto")
+pipeline.enable_model_cpu_offload()  # Verbesserte Version von sequential_cpu_offload
 
 while True:
     prompt = input("Prompt: \n")
-    image_name = prompt.lower().replace(" ", "_") + ".png"
-    print(image_name)
+    imageName = prompt.lower().replace(" ", "_") + ".png"
+    print(f"Erstelle Bild: {imageName}")
 
-    image = pipeline(
-        prompt=prompt,
-        num_inference_steps=28,
-        guidance_scale=4.0,
-        width=1024,
-        height=1024
-    ).images[0]
+    with torch.inference_mode():  # Effizienter als torch.no_grad()
+        image = pipeline(
+            prompt=prompt,
+            num_inference_steps=28,
+            guidance_scale=4.5,
+            width=512,
+            height=512,
+            max_sequence_length=256,
+        ).images[0]
 
-    image.save(image_name)
+    image.save(imageName)
