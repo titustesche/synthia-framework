@@ -1,12 +1,19 @@
-import {BaseEntity, Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    Entity,
+    ManyToMany,
+    OneToMany,
+    PrimaryColumn,
+} from "typeorm";
 import {Message} from "./Message";
 import {User} from "./User";
 
 
 @Entity()
 export class Conversation extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    id: string;
 
     @Column()
     name: string;
