@@ -1,7 +1,7 @@
 import torch
 from diffusers import BitsAndBytesConfig, StableDiffusion3Pipeline
 
-model_path = "/models/<modelfile/folder>"
+model_path = "/models/<model>"
 
 # 4-Bit-Quantisierung (FP4)
 nf4_config = BitsAndBytesConfig(
@@ -22,17 +22,18 @@ pipeline = StableDiffusion3Pipeline.from_pretrained(
 pipeline.enable_attention_slicing()
 pipeline.enable_sequential_cpu_offload()
 
-prompt = (
-    "Your super cool original nft"
-)
+while True:
+    prompt = input("Prompt: \n")
+    imageName = prompt.lower().replace(" ", "_") + ".png"
+    print(imageName)
 
-image = pipeline(
-    prompt=prompt,
-    num_inference_steps=28,
-    guidance_scale=4.5,
-    width=512,
-    height=512,
-    max_sequence_length=256,
-).images[0]
+    image = pipeline(
+        prompt=prompt,
+        num_inference_steps=28,
+        guidance_scale=4.5,
+        width=512,
+        height=512,
+        max_sequence_length=256,
+    ).images[0]
 
-image.save("image.png")
+    image.save(imageName)

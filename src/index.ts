@@ -3,13 +3,19 @@ import {AppDataSource} from "./database/data-source";
 import actionRoute from "./routes/actions";
 import conversationRoute from "./routes/conversation";
 import chatRoute from "./routes/chat";
-// Keep these as require even if your IDE tells you otherwise, it won't work otherwise, dunno why
+import userRoute from "./routes/user";
+import {authMiddleware} from "./routes/auth/authMiddleware";
+// !IMPORTANT! - Do not change to import, it will break
+const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const Express = require("express");
 
 const app = Express();
 app.use(Express.json());
 app.use(cors());
+app.use(cookieParser());
+app.use(userRoute);
+app.use(authMiddleware);
 app.use(databaseRoute);
 app.use(actionRoute);
 app.use(conversationRoute);

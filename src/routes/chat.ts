@@ -25,7 +25,7 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
     try {
         let conversation = await Conversation.findOneOrFail({
             where: {
-                id: +req.params.conversation,
+                id: req.params.conversation,
             }
         });
 
@@ -51,7 +51,7 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
         // On incoming data
         responseStream.on("data", data => {
             // Send the incoming data
-            console.log(data);
+            // console.log(data);
             res.write(JSON.stringify(data));
             res.flushHeaders();
         });
