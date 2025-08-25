@@ -4,18 +4,22 @@ import actionRoute from "./routes/actions";
 import conversationRoute from "./routes/conversation";
 import chatRoute from "./routes/chat";
 import userRoute from "./routes/user";
-// Keep these as require even if your IDE tells you otherwise, it won't work otherwise, dunno why
+import {authMiddleware} from "./routes/auth/authMiddleware";
+// !IMPORTANT! - Do not change to import, it will break
+const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const Express = require("express");
 
 const app = Express();
 app.use(Express.json());
 app.use(cors());
+app.use(cookieParser());
+app.use(userRoute);
+app.use(authMiddleware);
 app.use(databaseRoute);
 app.use(actionRoute);
 app.use(conversationRoute);
 app.use(chatRoute);
-app.use(userRoute);
 
 const port = 3000;
 
