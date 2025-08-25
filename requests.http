@@ -4,7 +4,7 @@ Content-Type: application/json
 Accept: application/stream+json
 
 {
-  "model": "qwen2.5:14b",
+  "model": "qwen3:14b",
   "role": "user",
   "query": "Can you write a poem",
   "images": []
@@ -12,6 +12,7 @@ Accept: application/stream+json
 
 ### Action
 POST http://localhost:3000/action
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNzIyNzgyOS02YTVhLTRjMzItODcyNS1lNWNmYzQ1ZTk3YTciLCJlbWFpbCI6InRpdHVzQHRlc2NoZS5tZSIsImlhdCI6MTc1NDY2Mzk1OSwiZXhwIjoxNzU0NzUwMzU5fQ.AM91gdWCDLteYWZulBsEQd-DZlrnkTS_zoyoXQ2_Mec
 Content-Type: application/json
 
 {
