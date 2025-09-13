@@ -14,16 +14,39 @@ const registerSchema = z.object({
     email: z.string().email(),
     password: z.string(),
 
-})
-const userRoute = Router();
-
-
-
-userRoute.post('/user/login', async (req, res) => {
-    const user = await User.findOne({})
 });
 
-userRoute.post("/user/register", processRequestBody(registerSchema), async (req, res) => {
+const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
+});
+
+const userRoute = Router();
+
+userRoute.post('/login', processRequestBody(loginSchema), async (req, res) => {
+    try {
+        // Get user from DB
+        const user = await User.findOne({where: {email: req.body.email}});
+        // If not exist, return 404
+        if (!user) return res.status(401).json({error: "Unauthorized"});
+        // Get password from post-body
+        let password = req.body.password;
+        // Compare to stored hash
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        // If hash doesn't match, return 401
+        if (!isMatch) return res.status(401).json({error: "Unauthorized"});
+        // If password and hash match, generate session token
+        const token = jwt.sign({userId: user.id, email: user.email}, JWT_SECRET, { expiresIn: '24h'});
+        // Return token
+        return res.status(200).json({token: token});
+    }
+
+    catch (error) {
+        res.status(500).json({error: "Internal Server Error"})
+    }
+});
+
+userRoute.post("/register", processRequestBody(registerSchema), async (req, res) => {
     const user = await User.findOne({
         where: {
             email: req.body.email,
