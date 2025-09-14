@@ -16,9 +16,13 @@ dotenv.config();
 const app = Express();
 app.set('trust proxy', 1);
 app.use(Express.json());
-app.use(cors({
-    // To be changed with production release
-}));
+const corsOptions = {
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Accept", "Authorization"],
+}
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(userRoute);
 app.use(authMiddleware);
