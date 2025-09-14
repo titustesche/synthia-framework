@@ -38,6 +38,14 @@ userRoute.post('/login', processRequestBody(loginSchema), async (req, res) => {
         // If password and hash match, generate session token
         const token = jwt.sign({userId: user.id, email: user.email}, JWT_SECRET, { expiresIn: '24h'});
         // Return token
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+            path: '/',
+        });
+
         return res.status(200).json({token: token});
     }
 
