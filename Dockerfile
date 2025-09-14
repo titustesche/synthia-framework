@@ -5,18 +5,14 @@ FROM node:latest
 LABEL authors="Titus Tesche"
 
 # Specify working directory
-WORKDIR /src
+WORKDIR /app
 
 # Copy package files and install
-COPY src/ ./
-RUN npm install -g ts-node typescript
-RUN npm install
-
-# Copy Sourcecode
-COPY . .
+COPY . ./
+RUN if [ -f package.json ]; then npm install; elif [ -f src/package.json ]; then cd src && npm install && cd ..; fi
 
 # Expose port
 EXPOSE 3000
 
 # Define start command
-CMD ["node", "--require", "ts-node/register", "index.ts"]
+CMD ["node", "--require", "./src/node_modules/ts-node/register", "src/index.ts"]
