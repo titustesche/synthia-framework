@@ -86,4 +86,10 @@ but for now that is at the very bottom of my priority list as the program itself
 #### 2.3.3 *Mac
 Nope, unless you figure it out yourself.
 
+#### 2.3.4 Docker
+The latest Version supports a docker image, which is now the default way of setting things up.
+To set up the docker containers, create an image from this repo. After that, setup another container for mariadb and name it
+(default is synthia_database and can be changed in `src/database/data-source.ts`). The setup should be the same as described in 2.2.1
+Next, create a network and connect both containers to this network. Finally, you can run both containers.
+
 *Some functionality is heavily impacted by these Operating Systems

@@ -1,0 +1,25 @@
+# Git stuff
+.git
+.gitignore
+LICENSE
+README.md
+
+# Node stuff
+src/node_modules
+
+# Docker stuff
+Dockerfile
+.dockerignore
+
+# Config stuff
+.venv
+.idea
+requests.http
+
+# We don't need docs in our image
+Documentation
+
+# No one needs the ecample env file
+.env.example
+
+
