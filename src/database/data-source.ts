@@ -6,7 +6,7 @@ import {User} from "./entities/User";
 
 export const AppDataSource = new DataSource({
     type: 'mariadb',
-    host: 'synthia_database', // Change this if you don't run inside docker
+    host: process.env.DATABASE_HOST, // Change this if you don't run inside docker
     port: 3306,
     username: 'synthia_framework',
     password: '1234',
