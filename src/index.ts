@@ -16,12 +16,26 @@ dotenv.config();
 const app = Express();
 app.set('trust proxy', 1);
 app.use(Express.json());
+
+// Set CORS options
 const corsOptions = {
-    origin: true,
+    // Get allowed origins from .env
+    origin: function(origin, callback) {
+        if (!origin || process.env.CORS_ORIGINS.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    // Yes, we want cookies - thank you very much
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Accept", "Authorization"],
+    // Only methods needed
+    methods: ["GET", "POST", "DELETE", "PATCH"],
+    // Only headers used
+    allowedHeaders: ["Content-Type"],
 }
+
+// Bunch of stuff our express Server should know
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(userRoute);
@@ -31,13 +45,20 @@ app.use(actionRoute);
 app.use(conversationRoute);
 app.use(chatRoute);
 
+// Port to listen on
 const port = 3000;
 
+// Try to init the Data Source
 AppDataSource.initialize().then(() => {
+    // If successful, notify in the console
     console.log("Data source initialized");
+    // Initialize Express
     app.listen(port, () => {
+        // If successful, notify in the console
         console.log(`App listening on ${port}`);
     });
-}).catch((err) => {
-    console.error(err);
-});
+    // If anything went wrong
+    }).catch((err) => {
+        // Log that error
+        console.error(err);
+    });
