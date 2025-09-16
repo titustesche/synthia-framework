@@ -217,7 +217,7 @@ export class Request {
                     }
 
                     // If it was already texting, add the new content to the block Buffer
-                    if (this.mode === this.modes.TEXT) blockBuffer += convertedChunk.content;
+                    else if (this.mode === this.modes.TEXT) blockBuffer += convertedChunk.content;
 
                     // If it's scripting
                     if (this.mode === this.modes.SCRIPT) {
