@@ -1,4 +1,5 @@
 // Todo: Everything in here can be moved to database because it basically is database access
+// No but what the actual fuck was i tripping on when writing this todo?
 import {Router} from "express";
 import {processRequestBody} from "zod-express-middleware";
 import {Conversation} from "../database/entities/Conversation";
