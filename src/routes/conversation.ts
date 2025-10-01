@@ -6,6 +6,8 @@ import {Conversation} from "../database/entities/Conversation";
 import {z} from "zod";
 import {Message} from "../database/entities/Message";
 import * as crypto from "node:crypto";
+import {authMiddleware} from "./auth/authMiddleware";
+import user from "./user";
 
 const conversationRoute = Router();
 const convoPostSchema = z.object({
@@ -17,9 +19,17 @@ const messagePostSchema = z.object({
 });
 
 // List all conversations
-conversationRoute.get('/conversation', async (req, res) => {
+conversationRoute.get('/conversation', authMiddleware, async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
     try {
-        let conversations = await Conversation.find();
+        let conversations = await Conversation.find({
+            where: {
+                owner: user
+            }
+        });
+
         // Todo: Order these by last message
         return res.status(200).json({"conversations": conversations});
     }
@@ -31,10 +41,14 @@ conversationRoute.get('/conversation', async (req, res) => {
 });
 
 // Delete an existing conversation
-conversationRoute.delete('/conversation/:id', async (req, res) => {
+conversationRoute.delete('/conversation/:id', authMiddleware, async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
     try {
         let conversation = await Conversation.findOneOrFail({
             where: {
+                owner: user,
                 id: req.params.id
             }
         });
@@ -57,11 +71,15 @@ conversationRoute.delete('/conversation/:id', async (req, res) => {
 });
 
 // Create a new conversation
-conversationRoute.post('/conversation', processRequestBody(convoPostSchema), async (req, res) => {
+conversationRoute.post('/conversation', authMiddleware, processRequestBody(convoPostSchema), async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
     try {
         let conversation = new Conversation();
-        conversation.name = req.body.name;
         conversation.id = crypto.randomUUID();
+        conversation.name = req.body.name;
+        conversation.owner = user;
 
         await conversation.save();
         return res.status(200).json({"conversation": conversation});
@@ -74,11 +92,15 @@ conversationRoute.post('/conversation', processRequestBody(convoPostSchema), asy
 });
 
 // Request this to get all the messages from the given conversation
-conversationRoute.get('/message/:id', async (req, res) => {
+conversationRoute.get('/message/:id', authMiddleware, async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
     try {
         let conversation = await Conversation.findOneOrFail({
             where: {
-                id: req.params.id
+                id: req.params.id,
+                owner: user
             },
             relations: {
                 messages: true
@@ -87,7 +109,7 @@ conversationRoute.get('/message/:id', async (req, res) => {
 
         if (!conversation)
         {
-            return res.status(404).json({"error": "Conversation not found"});
+            return res.status(404).json({error: "Cannot access conversation"});
         }
 
         return res.status(200).json({"messages": conversation.messages});
@@ -100,17 +122,21 @@ conversationRoute.get('/message/:id', async (req, res) => {
 });
 
 // Submit a new Message to a conversation (without requesting an answer from the AI)
-conversationRoute.post('/message/:id', processRequestBody(messagePostSchema), async (req, res) => {
+conversationRoute.post('/message/:id', authMiddleware, processRequestBody(messagePostSchema), async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
     try {
         // Make sure the conversation exists
         // Todo: Also make sure the user is allowed to modify the conversation
         let conversation = await Conversation.findOneOrFail({
             where: {
-                id: req.params['id']
+                id: req.params['id'],
+                owner: user
             }
         });
 
-        if (!conversation) return res.status(404).json({"error": "Conversation does not exist"});
+        if (!conversation) return res.status(404).json({error: "Cannot access conversation"});
 
         let message = new Message();
         message.role = req.body.role;
