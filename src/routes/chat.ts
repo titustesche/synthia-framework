@@ -4,6 +4,7 @@ import {processRequestBody} from "zod-express-middleware";
 import {Conversation} from "../database/entities/Conversation";
 import {Message} from "../database/entities/Message";
 import {Request} from "../classes/Request";
+import {authMiddleware} from "./auth/authMiddleware";
 
 const chatRoute = Router();
 const chatSchema = z.object({
@@ -16,7 +17,9 @@ const chatSchema = z.object({
 
 // Todo: Permissions
 // For submitting a chat request
-chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req, res) => {
+chatRoute.post("/chat/:conversation", authMiddleware, processRequestBody(chatSchema), async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
     // Set headers to stream
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Transfer-Encoding', 'chunked');
@@ -89,5 +92,12 @@ chatRoute.post("/chat/:conversation", processRequestBody(chatSchema), async (req
         return;
     }
 });
+
+chatRoute.patch("/chat/:id", authMiddleware, processRequestBody(chatSchema), async (req, res) => {
+    const user = req.user!;
+    if (!user) return res.status(401).json({error: "Unauthorized"});
+
+    // Make message contents editable
+})
 
 export default chatRoute;
