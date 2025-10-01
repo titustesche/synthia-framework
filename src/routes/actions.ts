@@ -2,6 +2,7 @@ import {Router} from "express";
 import {z} from "zod";
 import {processRequestBody} from "zod-express-middleware";
 import * as path from "node:path";
+import {authMiddleware} from "./auth/authMiddleware";
 // Same as in the index.ts, keep these as require
 const fs = require('fs');
 const { spawn } = require('child_process');
@@ -12,9 +13,11 @@ const receiveSchema = z.object({
     query: z.string(),
 })
 
-actionRoute.post('/action', processRequestBody(receiveSchema), async (req, res) => {
+actionRoute.post('/action', authMiddleware, processRequestBody(receiveSchema), async (req, res) => {
     try {
         const user = req.user!;
+        if (!user) return res.status(401).json({error: "Unauthorized"});
+
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Transfer-Encoding', 'chunked');
         let filepath = path.resolve('src/scripts/temp.py');
