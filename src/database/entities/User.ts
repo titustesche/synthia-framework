@@ -1,4 +1,4 @@
-import {BaseEntity, Column, Entity, ManyToMany, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm";
+import {BaseEntity, Column, Entity, ManyToMany, OneToMany, PrimaryColumn, PrimaryGeneratedColumn} from "typeorm";
 import {Message} from "./Message";
 import {Conversation} from "./Conversation";
 
@@ -16,6 +16,6 @@ export class User extends BaseEntity {
     @Column()
     passwordHash: string;
 
-    @ManyToMany(() => Conversation, (conversation) => conversation.users, {onDelete: "CASCADE"})
+    @OneToMany(() => Conversation, (conversation) => conversation.owner, {onDelete: "CASCADE"})
     conversations: Conversation[];
 }
