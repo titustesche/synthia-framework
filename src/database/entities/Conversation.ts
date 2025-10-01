@@ -2,7 +2,7 @@ import {
     BaseEntity,
     Column,
     Entity,
-    ManyToMany,
+    ManyToMany, ManyToOne,
     OneToMany,
     PrimaryColumn,
 } from "typeorm";
@@ -21,6 +21,7 @@ export class Conversation extends BaseEntity {
     @OneToMany(() => Message, (message) => message.conversation, {onDelete: "CASCADE"})
     messages: Message[];
 
-    @ManyToMany(() => User, (user) => user.conversations, {onDelete: "CASCADE"})
-    users: User[];
+    // ManyToMany in order to support shared chats
+    @ManyToOne(() => User, (user) => user.conversations, {onDelete: "CASCADE"})
+    owner: User;
 }
